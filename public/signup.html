@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handlee&family=Shrikhand&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('./assets/bg_gif.gif');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .signup-container {
+            background: rgba(255, 255, 255, 0.424);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            text-align: center;
+        }
+        .signup-container h1 {
+            margin-bottom: 20px;
+            color: #ffffff;
+            font-family: "Shrikhand", serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .username,
+        .password,
+        .confirm_password,
+        .email,
+        .firstname,
+        .lastname,
+        .bio {
+            display: flexbox;
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 8px;
+            background-color: transparent;
+            border: none;
+            border-bottom: 2px solid #ffffff;
+            color: white;
+            font-family: "Handlee", cursive;
+            font-weight: 400;
+            font-style: normal;
+        }
+        .signup-container button {
+            padding: 10px 20px;
+            background: rgb(153, 0, 254);
+            border: none;
+            border-radius: 4px;
+            color: rgb(255, 255, 255);
+            cursor: pointer;
+        }
+        .signup-container button:hover {
+            background: rgb(153, 0, 254);
+        }
+        .error-message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Sign Up</h1>
+        <form action="/signup" method="POST">
+            <input type="text" name="username" class="username" placeholder="Username" required>
+            <input type="email" name="email" placeholder="Email" class="email" required>
+            <input type="password" name="password" id="password" class="password" placeholder="Password" required>
+            <input type="password" name="confirmPassword" class="confirm_password" placeholder="Confirm Password" required>
+            <input type="text" name="firstName" class="firstname" placeholder="First Name" required>
+            <input type="text" name="lastName" class="lastname" placeholder="Last Name" required>
+            <input type="text" name="bio" class="bio" placeholder="Bio">
+            <button type="submit">Sign Up</button>
+        </form>
+        <p class="redirect">Already have an account? <a href="./login.html">Log in</a></p>
+        <div class="error-message"></div>
+    </div>
+
+    <script>
+        const form = document.querySelector('form');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.querySelector('input[name="confirmPassword"]');
+        const errorMessage = document.querySelector('.error-message');
+
+        form.addEventListener('submit', function(event) {
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                errorMessage.textContent = "Passwords do not match";
+                event.preventDefault(); // Prevent form submission
+            }
+        });
+    </script>
+</body>
+</html>

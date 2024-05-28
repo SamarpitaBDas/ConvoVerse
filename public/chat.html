@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Handlee&family=Shrikhand&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Page</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('./assets/bg_gif.gif');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            height: 80%;
+        }
+        .user-list-container, .chat-container, .profile-container {
+            padding: 20px;
+        }
+        .user-list-container {
+            width: 20%;
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+        }
+        .user-list-container ul {
+            list-style: none;
+            padding: 0;
+        }
+        .user-list-container li {
+            padding: 10px;
+            cursor: pointer;
+        }
+        .user-list-container li:hover {
+            background: #f4f4f4;
+        }
+        .user-list-container li.active {
+            background: #ddd;
+            font-weight: bold;
+            color: darkblue;
+        }
+        .chat-container {
+            width: 60%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .chat-header {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .message-list {
+            list-style: none;
+            padding: 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .message-list li {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: left;
+            max-width: 80%; /* Added to limit message width */
+            word-wrap: break-word; /* Added to wrap long messages */
+            clear: both; /* Added to clear floats */
+        }
+        .sender-message {
+            background-color: rgb(153, 0, 254); /* Light purple for sender messages */
+            color: white; /* White text for sender messages */
+            float: right; 
+        }
+        .recipient-message {
+            background-color: white;
+            color: black; 
+            float: left; 
+        }
+        .message-input-container {
+            display: flex;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            margin-left: 10px;
+            background: rgb(153, 0, 254);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background: rgb(133, 0, 233);
+        }
+        .profile-container {
+            width: 20%;
+            border-left: 1px solid #ddd;
+            display: none;
+            flex-direction: column;
+        }
+        .profile-container h2 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="user-list-container">
+            <h2>Users</h2>
+            <ul id="userList"></ul>
+        </div>
+        <div class="chat-container">
+            <div class="chat-header" id="chatHeader">Chat</div>
+            <ul id="messages" class="message-list"></ul>
+            <div class="message-input-container">
+                <input id="messageInput" type="text" placeholder="Type your message here">
+                <button id="sendButton">Send</button>
+            </div>
+        </div>
+        <div class="profile-container" id="profileContainer">
+            <h2>User Profile</h2>
+            <p><strong>Username:</strong> <span id="profileUsername"></span></p>
+            <p><strong>First Name:</strong> <span id="profileFirstName"></span></p>
+            <p><strong>Last Name:</strong> <span id="profileLastName"></span></p>
+            <p><strong>Email:</strong> <span id="profileEmail"></span></p>
+            <p><strong>Bio:</strong> <span id="profileBio"></span></p>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        let recipientUsername = null;
+
+        // Function to get query parameters
+        function getQueryParams() {
+            const params = {};
+            const queryString = window.location.search.substring(1);
+            const regex = /([^&=]+)=([^&]*)/g;
+            let m;
+            while (m = regex.exec(queryString)) {
+                params[decodeURIComponent(m[1])] = decodeURIComponent(m[2]);
+            }
+            return params;
+        }
+
+        // Get username from query params
+        const params = getQueryParams();
+        const username = params.username;
+
+        // Function to send a message
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+
+            if (message !== '' && recipientUsername !== null) {
+                const messageObject = {
+                    from: username,
+                    to: recipientUsername,
+                    text: message,
+                    createdAt: new Date()
+                };
+
+                socket.emit('sendMessage', messageObject);
+                messageInput.value = '';
+            }
+        }
+
+        // Function to handle user click
+        function handleUserClick(event) {
+            const userList = document.querySelectorAll('#userList li');
+            userList.forEach(user => user.classList.remove('active')); // Remove 'active' class from all users
+
+            event.target.classList.add('active'); // Add 'active' class to the clicked user
+
+            recipientUsername = event.target.textContent;
+            document.getElementById('chatHeader').textContent = recipientUsername;
+            loadMessages(); // Load messages for the selected user
+        }
+
+        // Function to load messages
+        function loadMessages() {
+            if (recipientUsername !== null) {
+                fetch(`/messages?from=${username}&to=${recipientUsername}`)
+                    .then(response => response.json())
+                    .then(messages => {
+                        const messageList = document.getElementById('messages');
+                        messageList.innerHTML = ''; // Clear current messages
+
+                        messages.forEach(message => {
+                            const messageElement = document.createElement('li');
+                            messageElement.textContent = `${message.from}: ${message.text} (${new Date(message.createdAt).toLocaleTimeString()})`;
+                            messageList.appendChild(messageElement);
+                        });
+                    })
+                    .catch(error => console.error('Error loading messages:', error));
+            }
+        }
+
+        // Function to load user profile
+        function loadUserProfile(username) {
+            fetch(`/user?username=${username}`)
+                .then(response => response.json())
+                .then(user => {
+                    document.getElementById('profileUsername').textContent = user.username;
+                    document.getElementById('profileFirstName').textContent = user.firstName;
+                    document.getElementById('profileLastName').textContent = user.lastName;
+                    document.getElementById('profileEmail').textContent = user.email;
+                    document.getElementById('profileBio').textContent = user.bio;
+
+                    document.getElementById('profileContainer').style.display = 'flex';
+                })
+                .catch(error => console.error('Error loading user profile:', error));
+        }
+
+        // Event listener for the chat header click
+        document.getElementById('chatHeader').addEventListener('click', () => {
+            if (recipientUsername !== null) {
+                loadUserProfile(recipientUsername);
+            }
+        });
+
+        // Event listener for the send button
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        // Listening for new messages
+        socket.on('message', (message) => {
+            if (message.from === recipientUsername || message.to === recipientUsername) {
+                const messageList = document.getElementById('messages');
+                const messageElement = document.createElement('li');
+                messageElement.textContent = `${message.text} (${new Date(message.createdAt).toLocaleTimeString()})`;
+
+                // Add appropriate class based on sender or recipient
+                if (message.from === username) {
+                    messageElement.classList.add('sender-message');
+                } else {
+                    messageElement.classList.add('recipient-message');
+                }
+
+                messageList.appendChild(messageElement);
+            }
+        });
+
+
+        // Listening for user list updates
+        socket.on('userList', (users) => {
+            const userList = document.getElementById('userList');
+            userList.innerHTML = ''; // Clear existing list
+
+            users.forEach(user => {
+                const userElement = document.createElement('li');
+                userElement.textContent = user.username;
+                userElement.addEventListener('click', handleUserClick);
+                userList.appendChild(userElement);
+            });
+        });
+
+        // Request the user list when connected
+        socket.emit('getUserList');
+    </script>
+</body>
+</html>
