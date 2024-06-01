@@ -7,8 +7,10 @@ Welcome to **ConvoVerse** – your premier platform for engaging, dynamic conver
 - [Features](#features)
 - [Getting Started](#getting-started)
 - [Installation](#installation)
+- [Screenshots](#Screenshots)
 - [Usage](#usage)
 - [License](#license)
+
 
 
 ## Features
@@ -50,9 +52,8 @@ To run ConvoVerse locally, follow these instructions:
     npm start
     ```
 ## Screenshots
-![Screenshot1](public/assets/Screenshot1.png)
-![Screenshot2](public/assets/Screenshot2.png)
-![Screenshot3](public/assets/Screenshot3.png)
+![Screenshot1](screenshots/screenshot2.png)
+![Screenshot2](screenshots/screenshot3.png)
 
 ## Usage
 
