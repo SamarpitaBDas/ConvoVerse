@@ -49,6 +49,10 @@ To run ConvoVerse locally, follow these instructions:
     ```bash
     npm start
     ```
+## Screenshots
+![Screenshot1](public/assets/Screenshot1.png)
+![Screenshot2](public/assets/Screenshot2.png)
+![Screenshot3](public/assets/Screenshot3.png)
 
 ## Usage
 
