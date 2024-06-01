@@ -37,11 +37,11 @@ To run ConvoVerse locally, follow these instructions:
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/yourusername/convoverse.git
+    git clone https://github.com/samarpitabdas/ConvoVerse.git
     ```
 2. Navigate to the project directory:
     ```bash
-    cd convoverse
+    cd ConvoVerse
     ```
 3. Install the dependencies:
     ```bash
